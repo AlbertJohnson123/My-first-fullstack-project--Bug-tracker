@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Simple Tickets App</title>
+</head>
+<body>
+
+  <h1>Ticket App</h1>
+
+  <!-- 1. The Input Fields -->
+  <input type="text" id="title" placeholder="Title"><br><br>
+  <input type="text" id="description" placeholder="Description"><br><br>
+  
+  <select id="priority">
+    <option value="Low">Low</option>
+    <option value="Medium">Medium</option>
+    <option value="High">High</option>
+  </select><br><br>
+
+  <!-- 2. Buttons to trigger actions -->
+  <button onclick="createTicket()">Add Ticket</button>
+  <button onclick="getTickets()">Show All Tickets</button>
+
+  <hr>
+
+  <!-- 3. Where tickets will appear -->
+  <h2>Tickets:</h2>
+  <ul id="ticketsList"></ul>
+
+  <!-- 4. The Simple JavaScript -->
+  <script>
+    // A. Function to GET tickets from Flask
+    async function getTickets() {
+      // 1. Call your Flask server
+      let response = await fetch("http://127.0.0.1:5000/api/tickets");
+      let data = await response.json();
+
+      // 2. Clear previous list
+      let list = document.getElementById("ticketsList");
+      list.innerHTML = "";
+
+      // 3. Add each ticket as a bullet point
+      for (let ticket of data) {
+        let item = document.createElement("li");
+        item.innerText = ticket.title + " (" + ticket.priority + ") - " + ticket.description;
+        list.appendChild(item);
+      }
+    }
+
+    // B. Function to POST a new ticket to Flask
+    async function createTicket() {
+      // 1. Read what the user typed in the boxes
+      let titleInput = document.getElementById("title").value;
+      let descInput = document.getElementById("description").value;
+      let priorityInput = document.getElementById("priority").value;
+
+      // 2. Put it in a simple object
+      let newTicket = {
+        title: titleInput,
+        description: descInput,
+        priority: priorityInput
+      };
+
+      // 3. Send it to Flask
+      await fetch("http://127.0.0.1:5000/api/tickets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newTicket)
+      });
+
+      // 4. Clear the text boxes
+      document.getElementById("title").value = "";
+      document.getElementById("description").value = "";
+
+      // 5. Refresh the list to show the new ticket
+      getTickets();
+    }
+  </script>
+
+</body>
+</html>
